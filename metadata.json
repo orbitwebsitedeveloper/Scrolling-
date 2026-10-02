@@ -1,0 +1,6 @@
+{
+  "name": "Estate Cinematic Scroll Animation",
+  "description": "A seamless, smooth scroll animation real estate walkthrough showcasing luxury architectural spaces.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
