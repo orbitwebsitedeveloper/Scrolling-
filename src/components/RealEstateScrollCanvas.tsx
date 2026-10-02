@@ -10,6 +10,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { ESTATE_FRAMES, EstateFrame } from '@/src/utils/imageSequence';
 import { ambientSound } from '@/src/utils/audio';
 import OceanoraHeroOverlay from '@/src/components/OceanoraHeroOverlay';
+import CliffsideEleganceSection from '@/src/components/CliffsideEleganceSection';
 import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, ArrowUp } from 'lucide-react';
 
 interface LoadedImage {
@@ -371,12 +372,24 @@ export default function RealEstateScrollCanvas() {
     }
   };
 
-  // Explore button triggers smooth scroll down into the sequence
+  // Explore button triggers smooth scroll down into the cliffside elegance section
   const handleExplore = useCallback(() => {
     handleUserActivity();
     setIsPlaying(false);
     const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    const targetY = maxScroll * 0.12;
+    const targetY = maxScroll * 0.26;
+    window.scrollTo({
+      top: targetY,
+      behavior: 'smooth',
+    });
+  }, [handleUserActivity]);
+
+  // Navigate to deep interior walkthrough
+  const handleNavigateInterior = useCallback(() => {
+    handleUserActivity();
+    setIsPlaying(false);
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const targetY = maxScroll * 0.55;
     window.scrollTo({
       top: targetY,
       behavior: 'smooth',
@@ -427,11 +440,20 @@ export default function RealEstateScrollCanvas() {
           className="absolute inset-0 w-full h-full block"
         />
 
-        {/* Oceanora Luxury Hero UI Overlay */}
+        {/* Section 1: Oceanora Luxury Hero UI Overlay (Top Phase) */}
         <OceanoraHeroOverlay
           scrollProgress={progressDisplay}
           onExplore={handleExplore}
           onWatchFilm={handleWatchFilm}
+          isPlaying={isPlaying}
+        />
+
+        {/* Section 2: Cliffside Luxury Elegance Section (Next Phase, matching WA_1790918771782.jpg) */}
+        <CliffsideEleganceSection
+          scrollProgress={progressDisplay}
+          onNavigateHome={handleBackToTop}
+          onNavigateNext={handleNavigateInterior}
+          onWatchVideo={handleWatchFilm}
           isPlaying={isPlaying}
         />
 
