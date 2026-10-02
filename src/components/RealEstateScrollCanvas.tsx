@@ -9,7 +9,8 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { ESTATE_FRAMES, EstateFrame } from '@/src/utils/imageSequence';
 import { ambientSound } from '@/src/utils/audio';
-import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2 } from 'lucide-react';
+import OceanoraHeroOverlay from '@/src/components/OceanoraHeroOverlay';
+import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, ArrowUp } from 'lucide-react';
 
 interface LoadedImage {
   element: HTMLImageElement;
@@ -370,6 +371,38 @@ export default function RealEstateScrollCanvas() {
     }
   };
 
+  // Explore button triggers smooth scroll down into the sequence
+  const handleExplore = useCallback(() => {
+    handleUserActivity();
+    setIsPlaying(false);
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const targetY = maxScroll * 0.12;
+    window.scrollTo({
+      top: targetY,
+      behavior: 'smooth',
+    });
+  }, [handleUserActivity]);
+
+  // Watch film triggers auto-cruise and ambient sound
+  const handleWatchFilm = useCallback(() => {
+    handleUserActivity();
+    if (isMuted) {
+      const active = ambientSound.toggle();
+      setIsMuted(!active);
+    }
+    setIsPlaying((prev) => !prev);
+  }, [handleUserActivity, isMuted]);
+
+  // Back to top hero
+  const handleBackToTop = useCallback(() => {
+    handleUserActivity();
+    setIsPlaying(false);
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  }, [handleUserActivity]);
+
   return (
     <div
       ref={containerRef}
@@ -394,6 +427,14 @@ export default function RealEstateScrollCanvas() {
           className="absolute inset-0 w-full h-full block"
         />
 
+        {/* Oceanora Luxury Hero UI Overlay */}
+        <OceanoraHeroOverlay
+          scrollProgress={progressDisplay}
+          onExplore={handleExplore}
+          onWatchFilm={handleWatchFilm}
+          isPlaying={isPlaying}
+        />
+
         {/* Minimal Loading State */}
         {!isReady && (
           <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#050505] text-white/70 transition-opacity duration-700">
@@ -411,7 +452,7 @@ export default function RealEstateScrollCanvas() {
         {/* Delicate, unboxed scene indicator (auto-hides on inactivity, zero clutter) */}
         <div
           className={`fixed bottom-6 left-8 flex items-baseline gap-2 text-xs tracking-wider transition-opacity duration-700 pointer-events-none ${
-            uiVisible ? 'opacity-40' : 'opacity-0'
+            uiVisible && progressDisplay > 0.08 ? 'opacity-40' : 'opacity-0'
           }`}
         >
           <span className="font-mono text-white/60">
@@ -426,7 +467,7 @@ export default function RealEstateScrollCanvas() {
         {/* Ultra-Minimal Whisper-Quiet Progress Hairline (Right Edge) */}
         <div
           className={`fixed right-6 top-1/2 -translate-y-1/2 flex flex-col items-center gap-3 transition-opacity duration-700 pointer-events-none ${
-            uiVisible ? 'opacity-35 hover:opacity-80' : 'opacity-0'
+            uiVisible && progressDisplay > 0.05 ? 'opacity-35 hover:opacity-80' : 'opacity-0'
           }`}
         >
           <div className="w-[1px] h-32 bg-white/20 relative rounded-full overflow-hidden">
@@ -442,11 +483,23 @@ export default function RealEstateScrollCanvas() {
 
         {/* Minimalist Glass Control Pill (Auto-hides on inactivity) */}
         <div
-          className={`fixed bottom-6 right-6 flex items-center gap-1.5 p-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 transition-opacity duration-700 ${
+          className={`fixed bottom-6 right-6 flex items-center gap-1.5 p-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 transition-opacity duration-700 z-40 ${
             uiVisible ? 'opacity-60 hover:opacity-100' : 'opacity-0 pointer-events-none'
           }`}
           onClick={(e) => e.stopPropagation()}
         >
+          {/* Back to Hero Button (shown when scrolled down) */}
+          {progressDisplay > 0.08 && (
+            <button
+              onClick={handleBackToTop}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+              title="Return to Hero"
+              aria-label="Return to Hero"
+            >
+              <ArrowUp size={14} />
+            </button>
+          )}
+
           {/* Autoplay / Pause */}
           <button
             onClick={() => {
