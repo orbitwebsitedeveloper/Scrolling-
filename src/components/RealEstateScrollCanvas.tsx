@@ -11,6 +11,7 @@ import { ESTATE_FRAMES, EstateFrame } from '@/src/utils/imageSequence';
 import { ambientSound } from '@/src/utils/audio';
 import OceanoraHeroOverlay from '@/src/components/OceanoraHeroOverlay';
 import CliffsideEleganceSection from '@/src/components/CliffsideEleganceSection';
+import AgentMartinSection from '@/src/components/AgentMartinSection';
 import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, ArrowUp } from 'lucide-react';
 
 interface LoadedImage {
@@ -389,7 +390,19 @@ export default function RealEstateScrollCanvas() {
     handleUserActivity();
     setIsPlaying(false);
     const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    const targetY = maxScroll * 0.55;
+    const targetY = maxScroll * 0.58;
+    window.scrollTo({
+      top: targetY,
+      behavior: 'smooth',
+    });
+  }, [handleUserActivity]);
+
+  // Navigate to final walkthrough (master suite & twilight fire terrace)
+  const handleNavigateFinalWalkthrough = useCallback(() => {
+    handleUserActivity();
+    setIsPlaying(false);
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const targetY = maxScroll * 0.85;
     window.scrollTo({
       top: targetY,
       behavior: 'smooth',
@@ -455,6 +468,13 @@ export default function RealEstateScrollCanvas() {
           onNavigateNext={handleNavigateInterior}
           onWatchVideo={handleWatchFilm}
           isPlaying={isPlaying}
+        />
+
+        {/* Section 3: Meet Your Agent Martin & Portfolio Cards (Matching WA_1790919342259.png) */}
+        <AgentMartinSection
+          scrollProgress={progressDisplay}
+          onNavigateHome={handleBackToTop}
+          onNavigateNext={handleNavigateFinalWalkthrough}
         />
 
         {/* Minimal Loading State */}
