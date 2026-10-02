@@ -29,6 +29,8 @@ interface OceanoraHeroOverlayProps {
   onExplore: () => void;
   onWatchFilm: () => void;
   isPlaying: boolean;
+  onOpenMenu?: () => void;
+  onOpenAboutUs?: () => void;
 }
 
 export default function OceanoraHeroOverlay({
@@ -36,6 +38,8 @@ export default function OceanoraHeroOverlay({
   onExplore,
   onWatchFilm,
   isPlaying,
+  onOpenMenu,
+  onOpenAboutUs,
 }: OceanoraHeroOverlayProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -92,7 +96,13 @@ export default function OceanoraHeroOverlay({
 
             {/* Menu Trigger */}
             <button
-              onClick={() => setMenuOpen(true)}
+              onClick={() => {
+                if (onOpenMenu) {
+                  onOpenMenu();
+                } else {
+                  setMenuOpen(true);
+                }
+              }}
               className="w-10 h-10 flex items-center justify-center text-white/90 hover:text-white transition-colors cursor-pointer group"
               aria-label="Open Navigation"
             >

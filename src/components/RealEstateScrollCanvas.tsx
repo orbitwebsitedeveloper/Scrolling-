@@ -13,6 +13,8 @@ import OceanoraHeroOverlay from '@/src/components/OceanoraHeroOverlay';
 import CliffsideEleganceSection from '@/src/components/CliffsideEleganceSection';
 import AgentMartinSection from '@/src/components/AgentMartinSection';
 import OceanoraFooterSection from '@/src/components/OceanoraFooterSection';
+import NavigationDrawer from '@/src/components/NavigationDrawer';
+import AboutUsModal from '@/src/components/AboutUsModal';
 import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, ArrowUp } from 'lucide-react';
 
 interface LoadedImage {
@@ -46,6 +48,8 @@ export default function RealEstateScrollCanvas() {
     index: 0,
     name: ESTATE_FRAMES[0]?.name || '',
   });
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const [isAboutUsOpen, setIsAboutUsOpen] = useState<boolean>(false);
   const uiTimeoutRef = useRef<number | null>(null);
 
   // Mouse / Touch drag scrubbing
@@ -521,6 +525,8 @@ export default function RealEstateScrollCanvas() {
           onExplore={handleExplore}
           onWatchFilm={handleWatchFilm}
           isPlaying={isPlaying}
+          onOpenMenu={() => setIsMenuOpen(true)}
+          onOpenAboutUs={() => setIsAboutUsOpen(true)}
         />
 
         {/* Section 2: Cliffside Luxury Elegance Section (Next Phase, matching WA_1790918771782.jpg) */}
@@ -530,6 +536,8 @@ export default function RealEstateScrollCanvas() {
           onNavigateNext={handleNavigateInterior}
           onWatchVideo={handleWatchFilm}
           isPlaying={isPlaying}
+          onOpenMenu={() => setIsMenuOpen(true)}
+          onOpenAboutUs={() => setIsAboutUsOpen(true)}
         />
 
         {/* Section 3: Meet Your Agent Martin & Portfolio Cards (Matching WA_1790919342259.png) */}
@@ -544,6 +552,27 @@ export default function RealEstateScrollCanvas() {
           scrollProgress={progressDisplay}
           onNavigateTop={handleBackToTop}
           onOpenConsultation={handleNavigateInterior}
+          onOpenAboutUs={() => setIsAboutUsOpen(true)}
+        />
+
+        {/* Global Slide-out Navigation Drawer */}
+        <NavigationDrawer
+          isOpen={isMenuOpen}
+          onClose={() => setIsMenuOpen(false)}
+          onOpenAboutUs={() => setIsAboutUsOpen(true)}
+          onNavigateHome={handleBackToTop}
+          onNavigateResidences={handleExplore}
+          onNavigateAgent={handleNavigateInterior}
+          onNavigateFooter={handleNavigateFinalWalkthrough}
+          onBookConsultation={handleNavigateInterior}
+        />
+
+        {/* Dedicated About Us Page / Modal */}
+        <AboutUsModal
+          isOpen={isAboutUsOpen}
+          onClose={() => setIsAboutUsOpen(false)}
+          onExploreResidences={handleExplore}
+          onBookConsultation={handleNavigateInterior}
         />
 
         {/* Minimal Loading State */}

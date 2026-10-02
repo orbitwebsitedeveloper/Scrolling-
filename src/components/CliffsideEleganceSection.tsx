@@ -33,6 +33,8 @@ interface CliffsideEleganceSectionProps {
   onNavigateNext: () => void;
   onWatchVideo: () => void;
   isPlaying: boolean;
+  onOpenAboutUs?: () => void;
+  onOpenMenu?: () => void;
 }
 
 export default function CliffsideEleganceSection({
@@ -41,6 +43,8 @@ export default function CliffsideEleganceSection({
   onNavigateNext,
   onWatchVideo,
   isPlaying,
+  onOpenAboutUs,
+  onOpenMenu,
 }: CliffsideEleganceSectionProps) {
   const [activeTab, setActiveTab] = useState<'Home' | 'About' | 'Residences' | 'Lifestyle' | 'Gallery' | 'Contact'>('Residences');
   const [isResidencesModalOpen, setIsResidencesModalOpen] = useState(false);
@@ -190,6 +194,7 @@ export default function CliffsideEleganceSection({
                     onClick={() => {
                       setActiveTab(tab);
                       if (tab === 'Home') onNavigateHome();
+                      if (tab === 'About' && onOpenAboutUs) onOpenAboutUs();
                       if (tab === 'Residences' || tab === 'Gallery') setIsResidencesModalOpen(true);
                       if (tab === 'Contact') setIsEnquireModalOpen(true);
                     }}
@@ -237,6 +242,22 @@ export default function CliffsideEleganceSection({
                   <ArrowRight size={11} />
                 </div>
               </button>
+
+              {/* Hamburger Menu Trigger Button */}
+              {onOpenMenu && (
+                <button
+                  onClick={onOpenMenu}
+                  className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/15 flex items-center justify-center text-white/90 hover:text-white hover:bg-white/20 transition-colors cursor-pointer group"
+                  aria-label="Open Navigation"
+                  title="Open Navigation Menu"
+                >
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="w-4 h-[1.5px] bg-white group-hover:w-5 transition-all" />
+                    <span className="w-3 h-[1.5px] bg-white group-hover:w-5 transition-all" />
+                    <span className="w-4 h-[1.5px] bg-white group-hover:w-5 transition-all" />
+                  </div>
+                </button>
+              )}
             </div>
           </header>
 

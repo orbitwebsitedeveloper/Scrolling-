@@ -38,12 +38,14 @@ interface OceanoraFooterSectionProps {
   scrollProgress: number;
   onNavigateTop: () => void;
   onOpenConsultation?: () => void;
+  onOpenAboutUs?: () => void;
 }
 
 export default function OceanoraFooterSection({
   scrollProgress,
   onNavigateTop,
   onOpenConsultation,
+  onOpenAboutUs,
 }: OceanoraFooterSectionProps) {
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -275,7 +277,13 @@ export default function OceanoraFooterSection({
                     (item, i) => (
                       <li key={i}>
                         <button
-                          onClick={() => handleLinkClick(item)}
+                          onClick={() => {
+                            if (['About Us', 'Our Story', 'Our Team', 'Careers'].includes(item) && onOpenAboutUs) {
+                              onOpenAboutUs();
+                            } else {
+                              handleLinkClick(item);
+                            }
+                          }}
                           className="group flex items-center justify-between w-full hover:text-white transition-colors cursor-pointer text-left"
                         >
                           <span className="group-hover:translate-x-0.5 transition-transform">
