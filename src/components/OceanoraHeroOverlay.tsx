@@ -39,23 +39,25 @@ export default function OceanoraHeroOverlay({
 }: OceanoraHeroOverlayProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Parallax and fade calculation based on scroll progress (0 to 1)
-  // Fully visible at 0, smoothly fades out by 0.15 scroll progress
-  const fadeThreshold = 0.14;
-  const opacity = Math.max(0, 1 - scrollProgress / fadeThreshold);
-  const translateY = -scrollProgress * 280; // Gentle upward drift
+  // Physical scroll calculation:
+  // At progress 0: translateY = 0vh, opacity = 1
+  // As progress goes from 0 to 0.16: physically scrolls UP to -105vh and fades out smoothly
+  const exitProgress = Math.min(scrollProgress / 0.15, 1.2);
+  const translateY = -exitProgress * 105; // Physically scrolls up off the top
+  const opacity = Math.max(0, 1 - Math.pow(exitProgress, 1.4));
   const isHidden = opacity <= 0.01;
 
   return (
     <>
       {/* Hero Layer (Fixed, sits directly over the canvas) */}
       <div
-        className={`fixed inset-0 z-30 pointer-events-none transition-opacity duration-300 ${
+        className={`fixed inset-0 z-30 pointer-events-none transition-opacity duration-150 ${
           isHidden ? 'opacity-0 select-none' : 'opacity-100'
         }`}
         style={{
           opacity,
-          transform: `translate3d(0, ${translateY}px, 0)`,
+          transform: `translate3d(0, ${translateY}vh, 0)`,
+          willChange: 'transform, opacity',
         }}
       >
         <div className="relative w-full h-full flex flex-col justify-between px-6 sm:px-12 md:px-16 py-8 sm:py-10">

@@ -57,27 +57,44 @@ export default function CliffsideEleganceSection({
     message: '',
   });
 
-  // Section visibility based on scroll progress:
-  // Active between 0.16 and 0.48 scroll progress
-  // Fades in gently around 0.15, stays crisp until 0.44, fades out by 0.50
-  const startRange = 0.16;
-  const endRange = 0.46;
+  // Physical scrolling calculation for Section 2:
+  // Starts below viewport (+100vh) at progress 0.10
+  // Scrolls UP into view (0vh) between 0.10 and 0.24
+  // Rests in center from 0.24 to 0.34
+  // Scrolls UP off the screen (-105vh) between 0.34 and 0.48
+  let translateY = 100; // in vh
   let opacity = 0;
 
-  if (scrollProgress >= 0.14 && scrollProgress <= 0.48) {
-    if (scrollProgress < startRange) {
-      // Fade in
-      opacity = (scrollProgress - 0.14) / (startRange - 0.14);
-    } else if (scrollProgress > endRange) {
-      // Fade out
-      opacity = 1 - (scrollProgress - endRange) / (0.48 - endRange);
-    } else {
+  if (scrollProgress >= 0.08 && scrollProgress <= 0.50) {
+    if (scrollProgress < 0.24) {
+      // Entering from bottom
+      const enterFraction = Math.max(0, (scrollProgress - 0.08) / (0.24 - 0.08));
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - enterFraction, 3);
+      translateY = 100 - eased * 100;
+      opacity = Math.min(enterFraction * 1.5, 1);
+    } else if (scrollProgress <= 0.34) {
+      // Centered view
+      const lingerFraction = (scrollProgress - 0.24) / (0.34 - 0.24);
+      translateY = -lingerFraction * 6; // subtle gentle drift
       opacity = 1;
+    } else {
+      // Exiting off top
+      const exitFraction = Math.min(1, (scrollProgress - 0.34) / (0.48 - 0.34));
+      // Ease in cubic
+      const eased = Math.pow(exitFraction, 2.2);
+      translateY = -6 - eased * 100;
+      opacity = Math.max(0, 1 - exitFraction * 1.3);
     }
+  } else if (scrollProgress > 0.50) {
+    translateY = -110;
+    opacity = 0;
+  } else {
+    translateY = 110;
+    opacity = 0;
   }
 
   const isHidden = opacity <= 0.01;
-  const translateY = Math.sin((scrollProgress - 0.3) * Math.PI) * -15; // gentle float
 
   const handleToggleSound = () => {
     const active = ambientSound.toggle();
@@ -104,12 +121,13 @@ export default function CliffsideEleganceSection({
     <>
       {/* Elegance Section Layer */}
       <div
-        className={`fixed inset-0 z-30 pointer-events-none transition-opacity duration-500 p-3 sm:p-5 md:p-6 ${
+        className={`fixed inset-0 z-30 pointer-events-none transition-opacity duration-150 p-3 sm:p-5 md:p-6 ${
           isHidden ? 'opacity-0 select-none' : 'opacity-100'
         }`}
         style={{
           opacity,
-          transform: `translate3d(0, ${translateY}px, 0)`,
+          transform: `translate3d(0, ${translateY}vh, 0)`,
+          willChange: 'transform, opacity',
         }}
       >
         {/* Outer Architectural Border Frame (Matches WA_1790918771782.jpg) */}

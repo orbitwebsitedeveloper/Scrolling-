@@ -49,22 +49,29 @@ export default function OceanoraFooterSection({
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
-  // Visibility based on scroll progress:
-  // Fades in starting at 0.74, fully opaque from 0.82 to 1.00
-  const startRange = 0.74;
-  const fullRange = 0.84;
+  // Physical scrolling calculation for Section 4 (Footer & Stay Connected):
+  // Starts below viewport (+100vh) at progress 0.68
+  // Scrolls UP into view (0vh) between 0.68 and 0.88
+  // Remains docked at bottom (0vh) from 0.88 to 1.00
+  let translateY = 100; // in vh
   let opacity = 0;
 
-  if (scrollProgress >= startRange) {
-    if (scrollProgress >= fullRange) {
-      opacity = 1;
+  if (scrollProgress >= 0.68) {
+    if (scrollProgress < 0.88) {
+      const enterFraction = Math.max(0, (scrollProgress - 0.68) / (0.88 - 0.68));
+      const eased = 1 - Math.pow(1 - enterFraction, 3);
+      translateY = 100 - eased * 100;
+      opacity = Math.min(enterFraction * 1.4, 1);
     } else {
-      opacity = (scrollProgress - startRange) / (fullRange - startRange);
+      translateY = 0;
+      opacity = 1;
     }
+  } else {
+    translateY = 110;
+    opacity = 0;
   }
 
   const isHidden = opacity <= 0.01;
-  const translateY = Math.max(0, (1 - opacity) * 40);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,12 +90,13 @@ export default function OceanoraFooterSection({
   return (
     <>
       <div
-        className={`fixed inset-0 z-30 pointer-events-none transition-opacity duration-500 overflow-y-auto ${
+        className={`fixed inset-0 z-30 pointer-events-none transition-opacity duration-150 overflow-y-auto ${
           isHidden ? 'opacity-0 select-none' : 'opacity-100'
         }`}
         style={{
           opacity,
-          transform: `translate3d(0, ${translateY}px, 0)`,
+          transform: `translate3d(0, ${translateY}vh, 0)`,
+          willChange: 'transform, opacity',
         }}
       >
         <div className="min-h-full flex flex-col justify-end bg-gradient-to-t from-black via-black/95 to-black/60 pt-16 sm:pt-24 px-4 sm:px-8 md:px-12 lg:px-16 pb-8 pointer-events-auto">

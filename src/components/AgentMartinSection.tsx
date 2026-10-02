@@ -63,24 +63,42 @@ export default function AgentMartinSection({
   const [consultName, setConsultName] = useState('');
   const [consultContact, setConsultContact] = useState('');
 
-  // Section visibility based on scroll progress:
-  // Fades in around 0.46, fully crisp from 0.50 to 0.74, fades out by 0.78
-  const startRange = 0.46;
-  const endRange = 0.74;
+  // Physical scrolling calculation for Section 3 (Agent Martin):
+  // Starts below viewport (+100vh) at progress 0.38
+  // Scrolls UP into view (0vh) between 0.38 and 0.54
+  // Rests in center from 0.54 to 0.65
+  // Scrolls UP off the screen (-105vh) between 0.65 and 0.78
+  let translateY = 100; // in vh
   let opacity = 0;
 
-  if (scrollProgress >= 0.44 && scrollProgress <= 0.78) {
-    if (scrollProgress < startRange) {
-      opacity = (scrollProgress - 0.44) / (startRange - 0.44);
-    } else if (scrollProgress > endRange) {
-      opacity = 1 - (scrollProgress - endRange) / (0.78 - endRange);
-    } else {
+  if (scrollProgress >= 0.36 && scrollProgress <= 0.80) {
+    if (scrollProgress < 0.54) {
+      // Entering from bottom
+      const enterFraction = Math.max(0, (scrollProgress - 0.36) / (0.54 - 0.36));
+      const eased = 1 - Math.pow(1 - enterFraction, 3);
+      translateY = 100 - eased * 100;
+      opacity = Math.min(enterFraction * 1.5, 1);
+    } else if (scrollProgress <= 0.65) {
+      // Centered view
+      const lingerFraction = (scrollProgress - 0.54) / (0.65 - 0.54);
+      translateY = -lingerFraction * 5;
       opacity = 1;
+    } else {
+      // Exiting off top
+      const exitFraction = Math.min(1, (scrollProgress - 0.65) / (0.78 - 0.65));
+      const eased = Math.pow(exitFraction, 2.2);
+      translateY = -5 - eased * 100;
+      opacity = Math.max(0, 1 - exitFraction * 1.3);
     }
+  } else if (scrollProgress > 0.80) {
+    translateY = -110;
+    opacity = 0;
+  } else {
+    translateY = 110;
+    opacity = 0;
   }
 
   const isHidden = opacity <= 0.01;
-  const translateY = Math.sin((scrollProgress - 0.6) * Math.PI) * -12;
 
   const properties = [
     {
@@ -144,12 +162,13 @@ export default function AgentMartinSection({
   return (
     <>
       <div
-        className={`fixed inset-0 z-30 pointer-events-none transition-opacity duration-500 p-4 sm:p-8 md:p-10 flex flex-col justify-between ${
+        className={`fixed inset-0 z-30 pointer-events-none transition-opacity duration-150 p-4 sm:p-8 md:p-10 flex flex-col justify-between ${
           isHidden ? 'opacity-0 select-none' : 'opacity-100'
         }`}
         style={{
           opacity,
-          transform: `translate3d(0, ${translateY}px, 0)`,
+          transform: `translate3d(0, ${translateY}vh, 0)`,
+          willChange: 'transform, opacity',
         }}
       >
         {/* ========================================================================= */}

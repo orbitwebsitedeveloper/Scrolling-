@@ -32,6 +32,8 @@ export default function RealEstateScrollCanvas() {
   // Smooth scroll tracking
   const targetProgressRef = useRef<number>(0);
   const currentProgressRef = useRef<number>(0);
+  const targetScrollYRef = useRef<number>(0);
+  const smoothScrollYRef = useRef<number>(0);
   const rafIdRef = useRef<number | null>(null);
 
   // Interactive modes
@@ -104,9 +106,36 @@ export default function RealEstateScrollCanvas() {
     };
   }, []);
 
-  // Synchronize native window scroll to targetProgress
+  // Ultra-Smooth Inertial Mouse Wheel & Native Scroll Sync
   useEffect(() => {
-    const handleScroll = () => {
+    targetScrollYRef.current = window.scrollY || 0;
+    smoothScrollYRef.current = window.scrollY || 0;
+
+    const handleWheel = (e: WheelEvent) => {
+      // Don't intercept if scrolling inside a modal drawer, dialog, or form input
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('.overflow-y-auto, [role="dialog"], select, textarea, input')) {
+        return;
+      }
+
+      handleUserActivity();
+      if (isPlaying) {
+        setIsPlaying(false);
+      }
+
+      e.preventDefault();
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      if (maxScroll <= 0) return;
+
+      // Smooth normalized wheel delta with natural dampening
+      const delta = e.deltaY;
+      targetScrollYRef.current = Math.min(
+        Math.max(targetScrollYRef.current + delta * 0.9, 0),
+        maxScroll
+      );
+    };
+
+    const handleNativeScroll = () => {
       handleUserActivity();
       if (isPlaying) {
         setIsPlaying(false);
@@ -114,12 +143,22 @@ export default function RealEstateScrollCanvas() {
       const scrollY = window.scrollY || window.pageYOffset;
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
       if (maxScroll > 0) {
-        targetProgressRef.current = Math.min(Math.max(scrollY / maxScroll, 0), 1);
+        // If external jump (e.g. user dragged scrollbar or pressed keys), re-sync target
+        if (Math.abs(scrollY - smoothScrollYRef.current) > 200) {
+          targetScrollYRef.current = scrollY;
+          smoothScrollYRef.current = scrollY;
+          targetProgressRef.current = scrollY / maxScroll;
+        }
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('scroll', handleNativeScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('scroll', handleNativeScroll);
+    };
   }, [handleUserActivity, isPlaying]);
 
   // Main 60FPS Canvas Render & Interpolation Loop
@@ -141,16 +180,33 @@ export default function RealEstateScrollCanvas() {
         targetProgressRef.current += 0.0007;
         if (targetProgressRef.current >= 1) {
           targetProgressRef.current = 0; // seamless loop
+          targetScrollYRef.current = 0;
+          smoothScrollYRef.current = 0;
           window.scrollTo(0, 0);
         } else {
           const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-          window.scrollTo(0, targetProgressRef.current * maxScroll);
+          targetScrollYRef.current = targetProgressRef.current * maxScroll;
+          smoothScrollYRef.current = targetProgressRef.current * maxScroll;
+          window.scrollTo(0, targetScrollYRef.current);
+        }
+      } else {
+        // Smooth Inertia Scroll Physics
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        if (maxScroll > 0) {
+          const scrollDelta = targetScrollYRef.current - smoothScrollYRef.current;
+          if (Math.abs(scrollDelta) > 0.2) {
+            smoothScrollYRef.current += scrollDelta * 0.085;
+            window.scrollTo(0, smoothScrollYRef.current);
+            targetProgressRef.current = smoothScrollYRef.current / maxScroll;
+          } else {
+            smoothScrollYRef.current = targetScrollYRef.current;
+          }
         }
       }
 
       // Smooth Lerp Damping
       const delta = targetProgressRef.current - currentProgressRef.current;
-      currentProgressRef.current += delta * 0.075;
+      currentProgressRef.current += delta * 0.085;
 
       const progress = Math.min(Math.max(currentProgressRef.current, 0), 1);
       setProgressDisplay(progress);
@@ -379,7 +435,8 @@ export default function RealEstateScrollCanvas() {
     handleUserActivity();
     setIsPlaying(false);
     const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    const targetY = maxScroll * 0.26;
+    const targetY = maxScroll * 0.28;
+    targetScrollYRef.current = targetY;
     window.scrollTo({
       top: targetY,
       behavior: 'smooth',
@@ -392,6 +449,7 @@ export default function RealEstateScrollCanvas() {
     setIsPlaying(false);
     const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
     const targetY = maxScroll * 0.58;
+    targetScrollYRef.current = targetY;
     window.scrollTo({
       top: targetY,
       behavior: 'smooth',
@@ -403,7 +461,8 @@ export default function RealEstateScrollCanvas() {
     handleUserActivity();
     setIsPlaying(false);
     const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    const targetY = maxScroll * 0.85;
+    const targetY = maxScroll * 0.88;
+    targetScrollYRef.current = targetY;
     window.scrollTo({
       top: targetY,
       behavior: 'smooth',
@@ -424,6 +483,8 @@ export default function RealEstateScrollCanvas() {
   const handleBackToTop = useCallback(() => {
     handleUserActivity();
     setIsPlaying(false);
+    targetScrollYRef.current = 0;
+    smoothScrollYRef.current = 0;
     window.scrollTo({
       top: 0,
       behavior: 'smooth',
