@@ -12,6 +12,7 @@ import { ambientSound } from '@/src/utils/audio';
 import OceanoraHeroOverlay from '@/src/components/OceanoraHeroOverlay';
 import CliffsideEleganceSection from '@/src/components/CliffsideEleganceSection';
 import AgentMartinSection from '@/src/components/AgentMartinSection';
+import OceanoraFooterSection from '@/src/components/OceanoraFooterSection';
 import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, ArrowUp } from 'lucide-react';
 
 interface LoadedImage {
@@ -475,6 +476,13 @@ export default function RealEstateScrollCanvas() {
           scrollProgress={progressDisplay}
           onNavigateHome={handleBackToTop}
           onNavigateNext={handleNavigateFinalWalkthrough}
+        />
+
+        {/* Section 4: Luxury Footer Section (Matching WA_1790919837793.png) */}
+        <OceanoraFooterSection
+          scrollProgress={progressDisplay}
+          onNavigateTop={handleBackToTop}
+          onOpenConsultation={handleNavigateInterior}
         />
 
         {/* Minimal Loading State */}
